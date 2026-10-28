@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Slide 17 (step sequence 3)</title>
+<style>
+  body { font-family:monospace; font-size:14px; max-width:520px; margin:3em auto;
+         background:#fff; color:#111; line-height:1.8; }
+  #box { border:2px solid #333; padding:1.4em; margin-top:1.2em; outline:none; }
+  #box:focus { border-color:#000; }
+  .val  { font-size:22px; font-weight:bold; margin:0.2em 0; }
+  .info { font-size:13px; margin:0.15em 0; }
+  .step { font-size:12px; color:#555; margin-bottom:0.4em; }
+  .keys { font-size:12px; color:#444; margin-top:1.2em; }
+  .keys b { display:inline-block; min-width:160px; }
+  .warn  { font-size:13px; background:#fffbe6; border:1px solid #ccc;
+           padding:0.7em; margin-bottom:1em; }
+</style>
+</head>
+<body>
+<h1>Slide 17 (step sequence 3)</h1>
+<div class="warn"><strong>NVDA users:</strong> press <strong>Insert + Space</strong>
+  for Focus Mode, then use the keys below.</div>
+<div class="keys">
+  <div><b>Page Down / Page Up</b> &mdash; next / previous step</div>
+  <div><b>Up arrow</b> &mdash; go to parent node</div>
+  <div><b>Left / Right arrow</b> &mdash; go to left / right child</div>
+  <div><b>Down arrow</b> &mdash; return to root</div>
+  <div><b>H</b> &mdash; help and slide context</div>
+</div>
+<div id="box" tabindex="0" aria-live="assertive" aria-atomic="true"
+     role="region" aria-label="Tree step display"></div>
+<script>
+const STEPS = [{"v":"1","c":"","left":null,"right":{"v":"2","c":"","left":null,"right":null}},{"v":"2","c":"","left":{"v":"1","c":"","left":null,"right":null},"right":null}];
+const CONTEXT = "Top-Down Delete Example";
+let si = 0;
+function link(n, par){ if(!n) return null; n.parent=par;
+  link(n.left,n); link(n.right,n); return n; }
+STEPS.forEach(function(s){ link(s,null); });
+let current = STEPS[0];
+function speak(html){ const b=document.getElementById('box');
+  b.innerHTML=''; setTimeout(()=>{ b.innerHTML=html; },50); }
+function nodeView(n){
+  const label = n.c ? n.c.charAt(0).toUpperCase()+n.c.slice(1)+' node '+n.v
+                     : 'Node '+n.v;
+  const parent = n.parent ? 'Node '+n.parent.v+'.' : 'none. This is the root.';
+  const left   = n.left   ? 'Node '+n.left.v+'.'  : 'empty.';
+  const right  = n.right  ? 'Node '+n.right.v+'.' : 'empty.';
+  return '<div class="step">Step '+(si+1)+' of '+STEPS.length+'.</div>'+
+         '<div class="val">'+label+'.</div>'+
+         '<div class="info">Parent: '+parent+'</div>'+
+         '<div class="info">Left child: '+left+'</div>'+
+         '<div class="info">Right child: '+right+'</div>'; }
+function stepAnnounce(){
+  current = STEPS[si];
+  speak('<div class="step">Step '+(si+1)+' of '+STEPS.length+
+        '. Press arrow keys to explore the tree. Page Down for next step.</div>'); }
+document.getElementById('box').addEventListener('keydown',function(e){
+  const keys=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','PageUp','PageDown'];
+  if(keys.includes(e.key)) e.preventDefault();
+  if(e.key==='h'||e.key==='H'){
+    const ctx=CONTEXT?('<p>From the slide: '+CONTEXT+'</p>'):'';
+    speak('<p>Step '+(si+1)+' of '+STEPS.length+'. Use arrow keys to navigate ' +
+          'the tree. Page Down and Page Up move between steps.</p>'+ctx); return; }
+  switch(e.key){
+    case 'PageDown': if(si<STEPS.length-1){ si++; stepAnnounce(); } break;
+    case 'PageUp':   if(si>0){ si--; stepAnnounce(); } break;
+    case 'ArrowUp':
+      if(current.parent){ current=current.parent; speak(nodeView(current)); } break;
+    case 'ArrowLeft':
+      if(current.left){ current=current.left; speak(nodeView(current)); } break;
+    case 'ArrowRight':
+      if(current.right){ current=current.right; speak(nodeView(current)); } break;
+    case 'ArrowDown':
+      current=STEPS[si]; speak(nodeView(current)); break;
+  }
+});
+window.onload=()=>{ document.getElementById('box').focus(); stepAnnounce(); };
+</script>
+</body>
+</html>

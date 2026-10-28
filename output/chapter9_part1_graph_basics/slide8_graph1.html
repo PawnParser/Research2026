@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Weighted graph</title>
+<style>
+  body { font-family: monospace; font-size:14px; max-width:480px; margin:3em auto;
+         background:#fff; color:#111; line-height:1.8; }
+  #box { border:2px solid #333; padding:1.4em; margin-top:1.2em; outline:none; }
+  #box:focus { border-color:#000; }
+  .val  { font-size:22px; font-weight:bold; margin:0.2em 0; }
+  .info { font-size:13px; margin:0.15em 0; }
+  .keys { font-size:12px; color:#444; margin-top:1.2em; }
+  .keys b { display:inline-block; min-width:150px; }
+  .warn { font-size:13px; background:#fffbe6; border:1px solid #ccc; padding:0.7em; margin-bottom:1em; }
+</style>
+</head>
+<body>
+<h1>Weighted graph</h1>
+<div class="warn"><strong>NVDA users:</strong> press <strong>Insert + Space</strong> for Focus Mode,
+  then use the keys below. For directed graphs, Left and Right cycle outgoing connections only.</div>
+<div class="keys">
+  <div><b>Left / Right arrow</b> &mdash; cycle through the current node's connections</div>
+  <div><b>Enter</b> &mdash; move to the selected connected node</div>
+  <div><b>Backspace</b> &mdash; go back to the previous node</div>
+  <div><b>H</b> &mdash; help: this node's connections and the slide's notes</div>
+  <div><b>Page Down / Page Up</b> &mdash; step through every node in turn</div>
+</div>
+<div id="box" tabindex="0" aria-live="assertive" aria-atomic="true"
+     role="region" aria-label="Graph node display"></div>
+<script>
+const NODES = [{"l":"5","dir":true,"nb":[1],"in":[2,4]},{"l":"3","dir":true,"nb":[],"in":[0]},{"l":"8","dir":true,"nb":[0,7],"in":[6,10]},{"l":"3","dir":true,"nb":[],"in":[10,5]},{"l":"7","dir":true,"nb":[0],"in":[8,9]},{"l":"5","dir":true,"nb":[3],"in":[10]},{"l":"2","dir":true,"nb":[2],"in":[]},{"l":"node 1","dir":true,"nb":[12,8],"in":[2]},{"l":"43","dir":true,"nb":[4],"in":[7]},{"l":"node 2","dir":true,"nb":[11,4],"in":[13]},{"l":"node 3","dir":true,"nb":[5,3,2],"in":[]},{"l":"node 4","dir":true,"nb":[],"in":[9]},{"l":"5","dir":true,"nb":[],"in":[7]},{"l":"1","dir":true,"nb":[9],"in":[]}];
+const CONTEXT = "Based on the application, the value can represent length, cost, distance, etc.)cost, or weight(value bears a every edge A graph where";
+let cur = 0, sel = 0, hist = [];
+function speak(html){ const b=document.getElementById('box'); b.innerHTML='';
+  setTimeout(()=>{ b.innerHTML=html; }, 50); }
+function nbNames(n){ return n.nb.length ? n.nb.map(i=>NODES[i].l).join(', ') : 'none'; }
+function inNames(n){ return n.in.length ? n.in.map(i=>NODES[i].l).join(', ') : 'none'; }
+function view(){ const n=NODES[cur];
+  let s=`<div class="val">${n.l}.</div>`;
+  if(n.dir){
+    s+=`<div class="info">Outgoing connections (\u2192): ${nbNames(n)}.</div>`;
+    if(n.in.length) s+=`<div class="info">Incoming connections (\u2190): ${inNames(n)}.</div>`;
+  } else {
+    s+=`<div class="info">Connected to: ${nbNames(n)}.</div>`+
+       `<div class="info">${n.nb.length} connection${n.nb.length===1?'':'s'}.</div>`;
+  }
+  if(n.nb.length) s+=`<div class="info">Selected: ${NODES[n.nb[sel]].l}. Press Enter to move there.</div>`;
+  speak(s); }
+document.getElementById('box').addEventListener('keydown', function(e){
+  if(['ArrowLeft','ArrowRight','Enter','Backspace','PageUp','PageDown'].includes(e.key)) e.preventDefault();
+  if(e.key==='h'||e.key==='H'){ const n=NODES[cur];
+    let t='Node '+n.l+' has '+n.nb.length+' connection'+(n.nb.length===1?'':'s')+': '+nbNames(n)+'. '+
+          'Use Left and Right to pick a connection, Enter to move to it, Backspace to go back.';
+    if(CONTEXT) t+=' From the slide: '+CONTEXT;
+    speak('<div class="info">'+t+'</div>'); return; }
+  const n=NODES[cur];
+  switch(e.key){
+    case 'ArrowRight': if(n.nb.length){ sel=(sel+1)%n.nb.length; view(); } break;
+    case 'ArrowLeft':  if(n.nb.length){ sel=(sel-1+n.nb.length)%n.nb.length; view(); } break;
+    case 'Enter': if(n.nb.length){ hist.push(cur); cur=n.nb[sel]; sel=0; view(); } break;
+    case 'Backspace': if(hist.length){ cur=hist.pop(); sel=0; view(); }
+      else speak('<div class="info">No previous node.</div>'); break;
+    case 'PageDown': cur=(cur+1)%NODES.length; sel=0; view(); break;
+    case 'PageUp': cur=(cur-1+NODES.length)%NODES.length; sel=0; view(); break;
+  }
+});
+window.onload=()=>{ document.getElementById('box').focus();
+  speak('<div class="info">Graph explorer ready, '+NODES.length+' nodes. Press Insert and Space for Focus Mode, then use the arrow keys to explore connections.</div>'); };
+</script>
+</body>
+</html>

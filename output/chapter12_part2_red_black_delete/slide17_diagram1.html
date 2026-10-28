@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Slide 17</title>
+<style>
+  body { font-family: monospace; font-size: 14px; max-width: 480px;
+         margin: 3em auto; background:#fff; color:#111; line-height:1.8; }
+  #box { border:2px solid #333; padding:1.4em; margin-top:1.2em; outline:none; }
+  #box:focus { border-color:#000; }
+  .val  { font-size:26px; font-weight:bold; margin:0.2em 0; }
+  .info { font-size:13px; margin:0.15em 0; }
+  .keys { font-size:12px; color:#444; margin-top:1.2em; }
+  .keys b { display:inline-block; min-width:110px; }
+  .warn  { font-size:13px; background:#fffbe6; border:1px solid #ccc;
+           padding:0.7em; margin-bottom:1em; }
+  .vnote { font-size:13px; background:#e8f4fd; border:1px solid #90c8e8;
+           padding:0.7em; margin-bottom:1em; }
+</style>
+</head>
+<body>
+<h1>Slide 17</h1>
+<div class="warn">
+  <strong>NVDA users:</strong> After opening this page, press
+  <strong>Insert + Space</strong> to switch NVDA to Focus Mode before
+  using the arrow keys. You will hear "Focus mode" announced. The arrow
+  keys will then control the tree instead of NVDA.
+</div>
+<!-- validation note: only rendered when non-empty -->
+<script>var __VN__="";if(__VN__)document.write('<div class="vnote">'+__VN__+'</div>');</script>
+<div class="keys">
+  <div><b>Up arrow</b> &mdash; go to parent node</div>
+  <div><b>Left arrow</b> &mdash; go to left child</div>
+  <div><b>Right arrow</b> &mdash; go to right child</div>
+  <div><b>Down arrow</b> &mdash; return to root node</div>
+  <div><b>H</b> &mdash; help: describe this node in more detail</div>
+</div>
+<div id="box" tabindex="0" aria-live="assertive" aria-atomic="true"
+     role="region" aria-label="Tree node display"></div>
+<script>
+const TREE = {"v":"15","c":"black","left":{"v":"6","c":"black","left":{"v":"3","c":"black","left":null,"right":null},"right":{"v":"12","c":"red","left":{"v":"10","c":"black","left":{"v":"7","c":"red","left":null,"right":null},"right":null},"right":{"v":"13","c":"black","left":null,"right":null}}},"right":{"v":"17","c":"black","left":{"v":"16","c":"black","left":null,"right":null},"right":{"v":"20","c":"red","left":{"v":"18","c":"black","left":null,"right":null},"right":{"v":"23","c":"black","left":null,"right":null}}}};
+const SUMMARY = "Tree with 12 nodes. Root is node 15. Height 5.";
+const CONTEXT = "from this R-B Tree10Delete Example 1:";
+function link(n, parent){ if(!n) return null; n.parent=parent;
+  link(n.left,n); link(n.right,n); return n; }
+const root = link(TREE, null);
+let current = root;
+function speak(html){ const b=document.getElementById('box');
+  b.innerHTML=''; setTimeout(()=>{ b.innerHTML=html; }, 50); }
+function nodeView(n){
+  const parent = n.parent ? 'Node '+n.parent.v+'.' : 'none. This is the root.';
+  const left   = n.left   ? 'Node '+n.left.v+'.'   : 'empty.';
+  const right  = n.right  ? 'Node '+n.right.v+'.'  : 'empty.';
+  return `<div class="val">${n.c? n.c.charAt(0).toUpperCase()+n.c.slice(1)+' node ' : 'Node '}${n.v}.</div>`+
+         `<div class="info">Parent: ${parent}</div>`+
+         `<div class="info">Left child: ${left}</div>`+
+         `<div class="info">Right child: ${right}</div>`;
+}
+function helpView(n){
+  const kids = (n.left?1:0)+(n.right?1:0);
+  const role = n.parent ? (n===n.parent.left?'the left child of node '+n.parent.v:'the right child of node '+n.parent.v) : 'the root of the tree';
+  const col = n.c ? ('This is a '+n.c+' node. ') : '';
+  const ctx = CONTEXT ? ('<div class="info">From the slide: '+CONTEXT+'</div>') : '';
+  return `<div class="info">${col}Node ${n.v} is ${role}. It has ${kids} child${kids===1?'':'ren'}. `+
+         `Up arrow goes to the parent, Left and Right go to the children, Down returns to the root.</div>`+ctx;
+}
+document.getElementById('box').addEventListener('keydown', function(e){
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
+  if(e.key==='h'||e.key==='H'){ speak(helpView(current)); return; }
+  switch(e.key){
+    case 'ArrowUp':
+      if(current.parent){ current=current.parent; speak(nodeView(current)); }
+      else speak(`<div class="val">Node ${current.v}.</div><div class="info">You cannot go higher. You are at the root.</div>`);
+      break;
+    case 'ArrowLeft':
+      if(current.left){ current=current.left; speak(nodeView(current)); }
+      else speak(`<div class="val">Node ${current.v}.</div><div class="info">No left child.</div>`);
+      break;
+    case 'ArrowRight':
+      if(current.right){ current=current.right; speak(nodeView(current)); }
+      else speak(`<div class="val">Node ${current.v}.</div><div class="info">No right child.</div>`);
+      break;
+    case 'ArrowDown':
+      current=root; speak(nodeView(current)); break;
+  }
+});
+window.onload = () => {
+  document.getElementById('box').focus();
+  speak(`<div class="info">${SUMMARY} Press Insert and Space to enable Focus Mode in NVDA, then use the arrow keys. Down arrow announces the root.</div>`);
+};
+</script>
+</body>
+</html>

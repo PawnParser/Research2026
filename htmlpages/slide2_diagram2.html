@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AVL Trees: Insertion (diagram 2)</title>
+<style>
+  body { font-family: monospace; font-size: 14px; max-width: 480px;
+         margin: 3em auto; background:#fff; color:#111; line-height:1.8; }
+  #box { border:2px solid #333; padding:1.4em; margin-top:1.2em; outline:none; }
+  #box:focus { border-color:#000; }
+  .val  { font-size:26px; font-weight:bold; margin:0.2em 0; }
+  .info { font-size:13px; margin:0.15em 0; }
+  .keys { font-size:12px; color:#444; margin-top:1.2em; }
+  .keys b { display:inline-block; min-width:110px; }
+  .warn { font-size:13px; background:#fffbe6; border:1px solid #ccc;
+          padding:0.7em; margin-bottom:1em; }
+</style>
+</head>
+<body>
+<h1>AVL Trees: Insertion (diagram 2)</h1>
+<div class="warn">
+  <strong>NVDA users:</strong> After opening this page, press
+  <strong>Insert + Space</strong> to switch NVDA to Focus Mode before
+  using the arrow keys. You will hear "Focus mode" announced. The arrow
+  keys will then control the tree instead of NVDA.
+</div>
+<div class="keys">
+  <div><b>Up arrow</b> &mdash; go to parent node</div>
+  <div><b>Left arrow</b> &mdash; go to left child</div>
+  <div><b>Right arrow</b> &mdash; go to right child</div>
+  <div><b>Down arrow</b> &mdash; return to root node</div>
+</div>
+<div id="box" tabindex="0" aria-live="assertive" aria-atomic="true"
+     role="region" aria-label="Tree node display"></div>
+<script>
+const TREE = {"v":"G","left":{"v":"C","left":{"v":"B","left":null,"right":null},"right":{"v":"D","left":null,"right":null}},"right":{"v":"H","left":null,"right":null}};
+const SUMMARY = "Tree with 5 nodes. Root is node G. Height 3.";
+function link(n, parent){ if(!n) return null; n.parent=parent;
+  link(n.left,n); link(n.right,n); return n; }
+const root = link(TREE, null);
+let current = root;
+function speak(html){ const b=document.getElementById('box');
+  b.innerHTML=''; setTimeout(()=>{ b.innerHTML=html; }, 50); }
+function nodeView(n){
+  const parent = n.parent ? 'Node '+n.parent.v+'.' : 'none. This is the root.';
+  const left   = n.left   ? 'Node '+n.left.v+'.'   : 'empty.';
+  const right  = n.right  ? 'Node '+n.right.v+'.'  : 'empty.';
+  return `<div class="val">Node ${n.v}.</div>`+
+         `<div class="info">Parent: ${parent}</div>`+
+         `<div class="info">Left child: ${left}</div>`+
+         `<div class="info">Right child: ${right}</div>`;
+}
+document.getElementById('box').addEventListener('keydown', function(e){
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
+  switch(e.key){
+    case 'ArrowUp':
+      if(current.parent){ current=current.parent; speak(nodeView(current)); }
+      else speak(`<div class="val">Node ${current.v}.</div><div class="info">You cannot go higher. You are at the root.</div>`);
+      break;
+    case 'ArrowLeft':
+      if(current.left){ current=current.left; speak(nodeView(current)); }
+      else speak(`<div class="val">Node ${current.v}.</div><div class="info">No left child.</div>`);
+      break;
+    case 'ArrowRight':
+      if(current.right){ current=current.right; speak(nodeView(current)); }
+      else speak(`<div class="val">Node ${current.v}.</div><div class="info">No right child.</div>`);
+      break;
+    case 'ArrowDown':
+      current=root; speak(nodeView(current)); break;
+  }
+});
+window.onload = () => {
+  document.getElementById('box').focus();
+  speak(`<div class="info">${SUMMARY} Press Insert and Space to enable Focus Mode in NVDA, then use the arrow keys. Down arrow announces the root.</div>`);
+};
+</script>
+</body>
+</html>
