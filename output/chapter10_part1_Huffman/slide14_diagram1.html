@@ -38,8 +38,8 @@
 <div id="box" tabindex="0" aria-live="assertive" aria-atomic="true"
      role="region" aria-label="Tree node display"></div>
 <script>
-const TREE = {"v":"1","c":"","left":{"v":"0.5","c":"","left":null,"right":null},"right":{"v":"0.5","c":"","left":null,"right":{"v":"0.25","c":"","left":{"v":"0.125","c":"","left":null,"right":null},"right":{"v":"0.125","c":"","left":null,"right":null}}}};
-const SUMMARY = "Tree with 6 nodes. Root is node 1. Height 4.";
+const TREE = {"v":"1","c":"","left":{"v":"0.5","c":"","left":null,"right":null},"right":{"v":"0.5","c":"","left":{"v":"0.25","c":"","left":null,"right":null},"right":{"v":"0.25","c":"","left":{"v":"0.125","c":"","left":null,"right":null},"right":{"v":"0.125","c":"","left":null,"right":null}}}};
+const SUMMARY = "Tree with 7 nodes. Root is node 1. Height 4.";
 const CONTEXT = "s values along traversal path into code for 1 and 0Concatenate s to the leaf node for Traverse from the root of the tree in the treesFor each symbol right branches with all 1, and left branches with all 0Associate )2t) + p(1t) = p(tp(Set probability of new tree tleft and right children of new tree  the 2t and 1tMake  )2tp( and )1tp(with the lowest probabilities  2t and 1tTake trees  more that one tree is leftRepeat whileFor each symbol, create a tree with a single root node";
 function link(n, parent){ if(!n) return null; n.parent=parent;
   link(n.left,n); link(n.right,n); return n; }
@@ -67,6 +67,14 @@ function helpView(n){
 document.getElementById('box').addEventListener('keydown', function(e){
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
   if(e.key==='h'||e.key==='H'){ speak(helpView(current)); return; }
+  if(e.key==='c'||e.key==='C'){
+    // C key: read slide context text, but only if present and concise
+    if(CONTEXT && CONTEXT.length > 0 && CONTEXT.length <= 400){
+      speak('<div class="info">Slide context: '+CONTEXT+'</div>'); }
+    else if(CONTEXT && CONTEXT.length > 400){
+      speak('<div class="info">Slide context: '+CONTEXT.slice(0,400)+'... (continues on slide)</div>'); }
+    else{ speak('<div class="info">No additional context available for this slide.</div>'); }
+    return; }
   switch(e.key){
     case 'ArrowUp':
       if(current.parent){ current=current.parent; speak(nodeView(current)); }

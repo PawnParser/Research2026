@@ -137,14 +137,29 @@ public class PptxAccessibilityTool {
                 // Slides that compare examples side by side (e.g. "Are these heaps
                 // leftist?") should always produce separate files even if the label
                 // sets happen to match.
-                // Group diagrams by whether they contain the same set of node labels.
-                // Same labels on the same slide = the same tree at different stages of
-                // an operation (before and after a rotation or recolouring).
-                // Different labels = different case examples; keep them separate.
+                // Group diagrams into step sequences.
+                // Two diagrams belong to the same sequence when:
+                //   (a) they have the same sorted set of node labels, AND
+                //   (b) they are in the same horizontal band of the slide
+                //       (their root nodes have similar y-coordinates).
+                // Condition (b) ensures that different cases shown on the same
+                // slide in separate rows (e.g. Case 1 / Case 2 / Case 3 stacked
+                // vertically on a summary slide) are kept as distinct sequences
+                // even when they share the same role labels (P, G, X, Y, Z…).
+                // Group by (spatial band, node count).
+                // Using node count rather than exact label set handles the common
+                // case where one diagram in a sequence has a label association
+                // failure on its root (giving an empty root label and a different
+                // label-set signature), while still being the same tree in a
+                // different transformation state.  Different cases on the same
+                // slide always have different node counts or different y-bands,
+                // so cross-case merging does not occur.
                 java.util.LinkedHashMap<String, List<TreeBuilder.Diagram>> groups =
                     new java.util.LinkedHashMap<>();
+                final double ROW_BAND_PX = 120.0;
                 for (TreeBuilder.Diagram d : diagrams) {
-                    String sig = labelSignature(d.root);
+                    int band = (int)(d.root.y / ROW_BAND_PX);
+                    String sig = band + ":" + d.nodeCount;
                     groups.computeIfAbsent(sig, k -> new ArrayList<>()).add(d);
                 }
                 System.out.println("   -> TREE: " + diagrams.size() + " diagram(s), "

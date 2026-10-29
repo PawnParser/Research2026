@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Minimum Spanning Tree (diagram 1)</title>
+<title>Minimum Spanning Tree</title>
 <style>
   body { font-family: monospace; font-size: 14px; max-width: 480px;
          margin: 3em auto; background:#fff; color:#111; line-height:1.8; }
@@ -19,7 +19,7 @@
 </style>
 </head>
 <body>
-<h1>Minimum Spanning Tree (diagram 1)</h1>
+<h1>Minimum Spanning Tree</h1>
 <div class="warn">
   <strong>NVDA users:</strong> After opening this page, press
   <strong>Insert + Space</strong> to switch NVDA to Focus Mode before
@@ -38,8 +38,8 @@
 <div id="box" tabindex="0" aria-live="assertive" aria-atomic="true"
      role="region" aria-label="Tree node display"></div>
 <script>
-const TREE = {"v":"A","c":"","left":{"v":"D","c":"","left":null,"right":{"v":"E","c":"","left":null,"right":null}},"right":{"v":"B","c":"","left":null,"right":null}};
-const SUMMARY = "Tree with 4 nodes. Root is node A. Height 3.";
+const TREE = {"v":"A","c":"","left":{"v":"D","c":"","left":null,"right":{"v":"E","c":"","left":null,"right":null}},"right":{"v":"B","c":"","left":null,"right":{"v":"F","c":"","left":null,"right":null}}};
+const SUMMARY = "Tree with 7 nodes. Root is node A. Height 3.";
 const CONTEXT = "Kruskal’s algorithmPrim’s algorithmWe will only look at two:Many algorithms have been proposed to minimise the spanning tree(vertices)all the dots  way to connect cheapestsingle We are interested in a finds multiple pathsAll-pairs shortest path algorithmstarting pointShortest path assumes a specificpath problem?How is it different from the shortestVery useful in routing applications!minimises the sum of edges is a spanning tree that minimum spanning treeA";
 function link(n, parent){ if(!n) return null; n.parent=parent;
   link(n.left,n); link(n.right,n); return n; }
@@ -67,6 +67,14 @@ function helpView(n){
 document.getElementById('box').addEventListener('keydown', function(e){
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
   if(e.key==='h'||e.key==='H'){ speak(helpView(current)); return; }
+  if(e.key==='c'||e.key==='C'){
+    // C key: read slide context text, but only if present and concise
+    if(CONTEXT && CONTEXT.length > 0 && CONTEXT.length <= 400){
+      speak('<div class="info">Slide context: '+CONTEXT+'</div>'); }
+    else if(CONTEXT && CONTEXT.length > 400){
+      speak('<div class="info">Slide context: '+CONTEXT.slice(0,400)+'... (continues on slide)</div>'); }
+    else{ speak('<div class="info">No additional context available for this slide.</div>'); }
+    return; }
   switch(e.key){
     case 'ArrowUp':
       if(current.parent){ current=current.parent; speak(nodeView(current)); }

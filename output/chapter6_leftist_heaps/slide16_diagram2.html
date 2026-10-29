@@ -67,6 +67,14 @@ function helpView(n){
 document.getElementById('box').addEventListener('keydown', function(e){
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
   if(e.key==='h'||e.key==='H'){ speak(helpView(current)); return; }
+  if(e.key==='c'||e.key==='C'){
+    // C key: read slide context text, but only if present and concise
+    if(CONTEXT && CONTEXT.length > 0 && CONTEXT.length <= 400){
+      speak('<div class="info">Slide context: '+CONTEXT+'</div>'); }
+    else if(CONTEXT && CONTEXT.length > 400){
+      speak('<div class="info">Slide context: '+CONTEXT.slice(0,400)+'... (continues on slide)</div>'); }
+    else{ speak('<div class="info">No additional context available for this slide.</div>'); }
+    return; }
   switch(e.key){
     case 'ArrowUp':
       if(current.parent){ current=current.parent; speak(nodeView(current)); }

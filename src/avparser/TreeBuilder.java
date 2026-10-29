@@ -77,7 +77,11 @@ public class TreeBuilder {
 
         // if the nearest node is too far away, treat it as no match - this is what stops
         // a line in one tree from grabbing a node in the tree next to it
-        double threshold = nodeRadius() * 2.2;
+        // 2.8× is needed for the smallest circles (24px diameter) where diagonal
+        // edges land ~30px from node center. Stubs are still filtered because they
+        // only have one endpoint near a node. Cross-tree matching is safe because
+        // adjacent trees are always 100+ px apart.
+        double threshold = nodeRadius() * 2.8;
 
         int up = nearestWithin(upX, upY, -1, threshold);
         int lo = nearestWithin(loX, loY, -1, threshold);

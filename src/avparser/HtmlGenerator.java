@@ -82,9 +82,11 @@ public class HtmlGenerator {
         "  const keys=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','PageUp','PageDown'];\n" +
         "  if(keys.includes(e.key)) e.preventDefault();\n" +
         "  if(e.key==='h'||e.key==='H'){\n" +
-        "    const ctx=CONTEXT?('<p>From the slide: '+CONTEXT+'</p>'):'';\n" +
-        "    speak('<p>Step '+(si+1)+' of '+STEPS.length+'. Use arrow keys to navigate ' +\n" +
-        "          'the tree. Page Down and Page Up move between steps.</p>'+ctx); return; }\n" +
+        "    speak('<p>Step '+(si+1)+' of '+STEPS.length+'. Arrow keys navigate nodes, Page Down/Up moves between steps.</p>'); return; }\n" +
+        "  if(e.key==='c'||e.key==='C'){\n" +
+        "    if(CONTEXT&&CONTEXT.length>0){ var t=CONTEXT.length<=400?CONTEXT:CONTEXT.slice(0,400)+'...'; speak('<p>Slide context: '+t+'</p>'); }\n" +
+        "    else{ speak('<p>No additional context on this slide.</p>'); }\n" +
+        "    return; }\n" +
         "  switch(e.key){\n" +
         "    case 'PageDown': if(si<STEPS.length-1){ si++; stepAnnounce(); } break;\n" +
         "    case 'PageUp':   if(si>0){ si--; stepAnnounce(); } break;\n" +
@@ -444,6 +446,14 @@ public class HtmlGenerator {
         "document.getElementById('box').addEventListener('keydown', function(e){\n" +
         "  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();\n" +
         "  if(e.key==='h'||e.key==='H'){ speak(helpView(current)); return; }\n" +
+        "  if(e.key==='c'||e.key==='C'){\n" +
+        "    // C key: read slide context text, but only if present and concise\n" +
+        "    if(CONTEXT && CONTEXT.length > 0 && CONTEXT.length <= 400){\n" +
+        "      speak('<div class=\"info\">Slide context: '+CONTEXT+'</div>'); }\n" +
+        "    else if(CONTEXT && CONTEXT.length > 400){\n" +
+        "      speak('<div class=\"info\">Slide context: '+CONTEXT.slice(0,400)+'... (continues on slide)</div>'); }\n" +
+        "    else{ speak('<div class=\"info\">No additional context available for this slide.</div>'); }\n" +
+        "    return; }\n" +
         "  switch(e.key){\n" +
         "    case 'ArrowUp':\n" +
         "      if(current.parent){ current=current.parent; speak(nodeView(current)); }\n" +

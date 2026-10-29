@@ -31,7 +31,7 @@
 <div id="box" tabindex="0" aria-live="assertive" aria-atomic="true"
      role="region" aria-label="Tree step display"></div>
 <script>
-const STEPS = [{"v":"3","c":"","left":null,"right":null},{"v":"3","c":"","left":null,"right":null},{"v":"3","c":"","left":null,"right":null}];
+const STEPS = [{"v":"5","c":"","left":null,"right":null},{"v":"3","c":"","left":null,"right":null},{"v":"7","c":"","left":null,"right":null}];
 const CONTEXT = "casesallWe want an algorithm that performs the best in Consider:The number of actions will depend on the order of elements";
 let si = 0;
 function link(n, par){ if(!n) return null; n.parent=par;
@@ -59,9 +59,11 @@ document.getElementById('box').addEventListener('keydown',function(e){
   const keys=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','PageUp','PageDown'];
   if(keys.includes(e.key)) e.preventDefault();
   if(e.key==='h'||e.key==='H'){
-    const ctx=CONTEXT?('<p>From the slide: '+CONTEXT+'</p>'):'';
-    speak('<p>Step '+(si+1)+' of '+STEPS.length+'. Use arrow keys to navigate ' +
-          'the tree. Page Down and Page Up move between steps.</p>'+ctx); return; }
+    speak('<p>Step '+(si+1)+' of '+STEPS.length+'. Arrow keys navigate nodes, Page Down/Up moves between steps.</p>'); return; }
+  if(e.key==='c'||e.key==='C'){
+    if(CONTEXT&&CONTEXT.length>0){ var t=CONTEXT.length<=400?CONTEXT:CONTEXT.slice(0,400)+'...'; speak('<p>Slide context: '+t+'</p>'); }
+    else{ speak('<p>No additional context on this slide.</p>'); }
+    return; }
   switch(e.key){
     case 'PageDown': if(si<STEPS.length-1){ si++; stepAnnounce(); } break;
     case 'PageUp':   if(si>0){ si--; stepAnnounce(); } break;
