@@ -1,14 +1,16 @@
 u22857941 Christopher Yoko Research Project
 
+NB!! Place all COS212 lectures inside of "lectures" folder to work! Intentionally did not upload university lectures to github.
+
 =============================
 
-Compile:
+Compile (in root):
 
 javac -d out src\avparser\*.java
 
 =============================
 
-Run every deck in lectures\, writing one folder per deck under output\:
+Run every deck in lectures\, writing one folder per deck under output\  (in root):
 
 Get-ChildItem lectures\*.pptx | ForEach-Object { java -cp out avparser.PptxAccessibilityTool $_.FullName "output\$($_.BaseName)" }
 
