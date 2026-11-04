@@ -3,8 +3,6 @@ package avparser;
 import org.w3c.dom.*;
 import java.util.*;
 
-// Helpers for walking the OOXML tree by local name, so we can ignore all the
-// namespace prefixes PowerPoint throws around (p:, a:, r: and friends).
 public final class Xml {
     private Xml() {}
 
@@ -21,7 +19,6 @@ public final class Xml {
         return out;
     }
 
-    // every direct child element, whatever it's called
     public static List<Element> childElements(Element parent) {
         List<Element> out = new ArrayList<>();
         if (parent == null) return out;
@@ -62,7 +59,6 @@ public final class Xml {
         return d.isEmpty() ? null : d.get(0);
     }
 
-    // all the text inside an element (every <a:t> run joined together)
     public static String text(Element root) {
         StringBuilder sb = new StringBuilder();
         for (Element t : descendants(root, "t")) sb.append(t.getTextContent());

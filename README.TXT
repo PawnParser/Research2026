@@ -1,3 +1,9 @@
+u22857941 Christopher Yoko Research Project
+
+=============================
+
+Compile:
+
 javac -d out src\avparser\*.java
 
 =============================

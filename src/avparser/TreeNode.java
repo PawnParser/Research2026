@@ -8,7 +8,7 @@ public class TreeNode {
     public TreeNode left, right, parent;
     public double x, y;// center, used to tell left child from right
     public int shapeId;
-    public String color = "";// "red"/"black"/... for red-black trees, else ""
+    public String color = "";
 
     public TreeNode(String value, double x, double y, int shapeId) {
         this.value = value; this.x = x; this.y = y; this.shapeId = shapeId;

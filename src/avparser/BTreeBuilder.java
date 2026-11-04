@@ -3,21 +3,24 @@ package avparser;
 import java.util.*;
 
 // Rebuilds the B-tree insertion sequence from an animated slide.
+
 // slides aren't one tree animating in place. 
-// each insertion is drawn as its own snapshot a bit lower down the slide, and the new key slides in from the left margin. The node boxes are actual <a:tbl> tables joined by lines. So:
-//   - apply the animation motion so each key ends up where it really lands
-//   - read a node's keys from the table cells + any keys that slid on top of it
+
+// each insertion is drawn as its own snapshot a bit lower down the slide, and the new key slides in from the left margin. node boxes are actual <a:tbl> tables joined by lines. So:
+
+// - apply the animation motion so each key ends up where it really lands
+//  - read a node's keys from the table cells + any keys that slid on top of it
 //   - join boxes with lines; each connected group of boxes is one snapshot
-//   - order the snapshots top to bottom = the order keys were inserted
+//  - order the snapshots top to bottom = the order keys were inserted
 public class BTreeBuilder {
 
     public static class State {
         public BNode root;
-        public String insertedKey;   // the key that's new compared to the snapshot before it
-        public int index;            // 1-based step number
-        public int maxKeys;          // most keys a node can hold (the B-tree order), from the box size
-        public boolean split;        // did a node split going into this step?
-        public String note = "";     // plain-English explanation of what happened this step
+        public String insertedKey;
+        public int index;
+        public int maxKeys;
+        public boolean split;
+        public String note = "";
     }
 
     private List<AvShape> boxes, keys, lines;
@@ -36,7 +39,7 @@ public class BTreeBuilder {
             }
         }
 
-        // move every animated key to its final resting spot
+     
         if (steps != null)
             for (List<SlideParser.Move> step : steps)
                 for (SlideParser.Move mv : step) {
@@ -45,7 +48,7 @@ public class BTreeBuilder {
                 }
         if (boxes.isEmpty()) return Collections.emptyList();
 
-        // join boxes that a line connects, so each cluster of boxes is one snapshot
+ 
         TreeBuilder.DisjointSet ds = new TreeBuilder.DisjointSet(boxes.size());
         List<int[]> conn = new ArrayList<>();
         for (AvShape ln : lines) {
@@ -119,8 +122,6 @@ public class BTreeBuilder {
         return st;
     }
 
-    // a node's keys: the filled table cells plus any key boxes that slid on top of it,
-    // read left to right. the dedupe drops a doubled-up key where the slide overlapped shapes.
     private List<String> nodeKeys(AvShape box) {
         double[] bp = pos.get(box.id);
         double bx = bp[0], by = bp[1], bw = box.w, bh = box.h;
@@ -151,8 +152,7 @@ public class BTreeBuilder {
         return out;
     }
 
-    // which two boxes does a line join - same end-point idea as the binary case, but
-    // measured to the nearest box rectangle since B-tree boxes are wide
+   
     private int[] matchLine(AvShape ln) {
         double[] lp = pos.get(ln.id);
         double lx = lp[0], ly = lp[1];
@@ -185,7 +185,6 @@ public class BTreeBuilder {
         return false;
     }
 
-    // first key in the new snapshot that wasn't in the previous one (counts duplicates)
     private String firstNew(List<String> prev, List<String> cur) {
         Map<String, Integer> count = new HashMap<>();
         for (String s : prev) count.merge(s, 1, Integer::sum);

@@ -8,8 +8,6 @@ import java.util.*;
 import java.util.regex.*;
 import java.util.zip.*;
 
-// Main entry point. Opens the .pptx straight from its zip with the built in Java XML parser
-// java avparser.PptxAccessibilityTool lecture.pptx outputFolder
 public class PptxAccessibilityTool {
 
     public static void main(String[] args) throws Exception {
@@ -31,12 +29,8 @@ public class PptxAccessibilityTool {
         GraphBuilder gb = new GraphBuilder();
         HtmlGenerator hg = new HtmlGenerator();
 
-        // Go through the slides in the order they show in the deck, NOT the order
-        // their files are named. PowerPoint keeps the real order in presentation.xml,
-        // and slideN.xml stops matching that order as soon as someone drags slides around.
         List<String> slidePaths = orderedSlidePaths(dbf, entries);
 
-        // animation paths are stored as fractions of the slide, so we need its size in px
         double[] dim = slideSize(dbf, entries.get("ppt/presentation.xml"));
         double slideW = dim[0], slideH = dim[1];
 
@@ -46,13 +40,12 @@ public class PptxAccessibilityTool {
 
         int pos = 0;
         for (String slidePath : slidePaths) {
-            int sNum = ++pos;   // the slide's position in the deck (1-based)
+            int sNum = ++pos;   
             Document doc = dbf.newDocumentBuilder().parse(new ByteArrayInputStream(entries.get(slidePath)));
             Element sld = doc.getDocumentElement();
 
             List<AvShape> shapes = sp.parse(sld);
             String title = slideTitle(shapes, sNum);
-            // the slide's own explanatory text (bullets etc.) - read out by the help key
             StringBuilder ctx = new StringBuilder();
             for (AvShape s : shapes)
                 if (s.isPlaceholder && !s.name.toLowerCase().startsWith("title") && !s.text.isEmpty())
@@ -68,19 +61,15 @@ public class PptxAccessibilityTool {
             boolean titleGraph = titleHas(tl, "graph", "digraph", "multigraph", "spanning",
                     "shortest path", "topological", "connectiv", "biconnectiv", "network",
                     "vertex", "vertices", "dijkstra", "weighted", "directed", "adjacen");
-            // a title mentioning "tree" or "insert" strongly implies tree structure —
-            // override looksLikeGraph even if the heuristic fires on extra stub lines
+
             boolean titleTree  = titleHas(tl, "tree", "insert", "rotation", "avl",
                     "splay", "huffman", "red", "black", "heap", "disjoint");
             boolean titleBtree = titleHas(tl, "b-tree", "btree", "b tree");
 
-            // 0) treap slides: nodes are stored as large text boxes, not circles,
-            //    so the normal tree path cannot parse them. Detect the "treap" label
-            //    and produce an informational page from the slide text instead.
             boolean hasTreapLabel = shapes.stream()
                 .anyMatch(s -> s.kind == AvShape.Kind.KEY && "treap".equalsIgnoreCase(s.text));
             boolean hasTreapFormat = shapes.stream()
-                .anyMatch(s -> s.text.matches("[A-Za-z]/\\d+.*")); // "K/8" style
+                .anyMatch(s -> s.text.matches("[A-Za-z]/\\d+.*")); 
             if (hasTreapLabel || hasTreapFormat) {
                 System.out.println("   -> TREAP: informational page generated");
                 String body = shapes.stream()
@@ -114,10 +103,7 @@ public class PptxAccessibilityTool {
                     catGraph++; System.out.println(); continue;
                 }
                 List<TreeBuilder.Diagram> diagrams = tb.build(shapes);
-                // decide minimum accepted tree size:
-                //   - if images present, stray circles are usually artifacts → need ≥ 2 nodes
-                //   - if the largest tree has ≥ 2 nodes, single-node items are fragments → need ≥ 2
-                //   - if ALL trees have 1 node (e.g. "Case 0: X is the root"), allow 1-node trees
+
                 int maxFound = diagrams.stream().mapToInt(d -> d.nodeCount).max().orElse(0);
                 int minNodes = (hasImage || maxFound >= 2) ? 2 : 1;
                 diagrams.removeIf(d -> d.nodeCount < minNodes);
@@ -132,28 +118,7 @@ public class PptxAccessibilityTool {
                     }
                     continue;
                 }
-                // Group diagrams by their sorted label signature, but ONLY when the
-                // slide describes an operation (insertion, rotation, case, etc.).
-                // Slides that compare examples side by side (e.g. "Are these heaps
-                // leftist?") should always produce separate files even if the label
-                // sets happen to match.
-                // Group diagrams into step sequences.
-                // Two diagrams belong to the same sequence when:
-                //   (a) they have the same sorted set of node labels, AND
-                //   (b) they are in the same horizontal band of the slide
-                //       (their root nodes have similar y-coordinates).
-                // Condition (b) ensures that different cases shown on the same
-                // slide in separate rows (e.g. Case 1 / Case 2 / Case 3 stacked
-                // vertically on a summary slide) are kept as distinct sequences
-                // even when they share the same role labels (P, G, X, Y, Z…).
-                // Group by (spatial band, node count).
-                // Using node count rather than exact label set handles the common
-                // case where one diagram in a sequence has a label association
-                // failure on its root (giving an empty root label and a different
-                // label-set signature), while still being the same tree in a
-                // different transformation state.  Different cases on the same
-                // slide always have different node counts or different y-bands,
-                // so cross-case merging does not occur.
+
                 java.util.LinkedHashMap<String, List<TreeBuilder.Diagram>> groups =
                     new java.util.LinkedHashMap<>();
                 final double ROW_BAND_PX = 120.0;
@@ -246,9 +211,7 @@ public class PptxAccessibilityTool {
         return false;
     }
 
-    // Collect all non-empty node labels from the tree, sort them, and join them.
-    // Two diagrams with the same signature contain the same set of labels and
-    // are treated as transformation steps of the same tree.
+
     private static String labelSignature(TreeNode n) {
         List<String> labels = new ArrayList<>();
         collectLabels(n, labels);
@@ -264,9 +227,7 @@ public class PptxAccessibilityTool {
         collectLabels(n.right, out);
     }
 
-    // Real slide order: presentation.xml lists slides by relationship id, and the
-    // .rels file says which file each id is. If any of that is missing we just fall
-    // back to sorting by the number in the file name.
+
     private static List<String> orderedSlidePaths(DocumentBuilderFactory dbf, Map<String, byte[]> entries) {
         List<String> ordered = new ArrayList<>();
         try {
@@ -307,7 +268,6 @@ public class PptxAccessibilityTool {
         return (v == null || v.isEmpty()) ? sldId.getAttribute("r:id") : v;
     }
 
-    // tidy up a relative path like "ppt/slides/../slides/slide1.xml"
     private static String normalize(String p) {
         Deque<String> stack = new ArrayDeque<>();
         for (String part : p.split("/")) {
@@ -317,7 +277,6 @@ public class PptxAccessibilityTool {
         return String.join("/", stack);
     }
 
-    // slide size in px, read from presentation.xml (defaults to a 4:3 960x720 slide)
     private static double[] slideSize(DocumentBuilderFactory dbf, byte[] presXml) {
         try {
             Document doc = dbf.newDocumentBuilder().parse(new ByteArrayInputStream(presXml));
@@ -336,7 +295,6 @@ public class PptxAccessibilityTool {
         return m.find() ? Integer.parseInt(m.group(1)) : 0;
     }
 
-    // a slide's title is the placeholder named "Title..."; otherwise just call it "Slide N"
     private static String slideTitle(List<AvShape> shapes, int sNum) {
         for (AvShape s : shapes)
             if (s.name != null && s.name.toLowerCase().startsWith("title") && !s.text.isEmpty())

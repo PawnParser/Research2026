@@ -3,30 +3,27 @@ package avparser;
 import java.util.*;
 
 /**
- * Validates reconstructed tree and B-tree diagrams for correctness before
- * they are written to HTML pages.
+ * Validates reconstructed tree and B-tree diagrams for correctness before they are written to HTML pages.
  *
- * Three kinds of check are applied:
+ * 3 kinds of check are applied:
  *
  *   1. Structural integrity — cycles or disconnected nodes always mean the
  *      parser made a mistake.  These diagrams are skipped.
  *
  *   2. Semantic correctness — when all node labels are integers the BST
  *      ordering property is checked.  A violation on a clearly non-insertion
- *      slide is skipped.  On insertion / case / rotation slides the diagram
- *      is kept but annotated, because the violation is intentional (it is
+ *     slide is skipped.  On insertion / case / rotation slides the diagram is kept but annotated, because the violation is intentional (it is
  *      the problem the algorithm is about to fix).
  *
- *   3. Property correctness — for red-black trees with colour information
- *      the main properties are checked and any violation is noted in the
- *      HTML page so the student knows they are looking at an intermediate
- *      state.  For B-trees each node's key list must be sorted and within
+ *   3. Property correctness — for red-black trees with colour information the main properties are checked and any violation is noted in the
+ *     HTML page so the student knows they are looking at an intermediate
+ *    state.  For B-trees each node's key list must be sorted and within
  *      the declared maximum.
  *
  * The result is a Report that the caller uses to decide what to do:
  *
  *   SKIP   — do not generate a page (structural error or clear BST mismatch
- *             on a slide that is not describing an operation).
+ *            on a slide that is not describing an operation).
  *   OK     — generate normally.
  *   ANNOTATE — generate with a note embedded in the page explaining what
  *              the student should be aware of.
@@ -64,10 +61,8 @@ public class DiagramValidator {
         LabelType kind = classifyLabels(d.root);
 
         if (kind == LabelType.NUMERIC) {
-            // Only check BST ordering on slides that are actually about search trees.
-            // Heaps, leftist heaps, treaps, Huffman trees and disjoint sets all store
-            // numeric values that do NOT follow BST ordering — checking them here would
-            // produce false positives and silently skip valid diagrams.
+            // Only check BST ordering on slides that are actually about search trees. heaps, leftist heaps, treaps, Huffman trees and disjoint sets all store
+            // numeric values that do NOT follow BST ordering — checking them here would produce false positives and silently skip valid diagrams.
             if (isBSTContext(slideTitle)) {
                 if (!isBST(d.root, Long.MIN_VALUE, Long.MAX_VALUE)) {
                     if (isIntermediateSlide(slideTitle))
@@ -148,13 +143,10 @@ public class DiagramValidator {
         return ok();
     }
 
-    // ---- private helpers ---------------------------------------------
-
     private static Report ok()                            { return new Report(Action.OK,       "", ""); }
     private static Report skip(String reason)             { return new Report(Action.SKIP,     "", reason); }
     private static Report annotate(String note)           { return new Report(Action.ANNOTATE, note, ""); }
 
-    // ---- label classification ----------------------------------------
 
     private enum LabelType { NUMERIC, ROLE, EMPTY, MIXED }
 
@@ -185,7 +177,6 @@ public class DiagramValidator {
         return s.matches("[PGUXYZS]");
     }
 
-    // ---- structural integrity ----------------------------------------
 
     private static boolean isStructurallySound(TreeNode root) {
         return !hasCycle(root, new HashSet<>());
@@ -197,7 +188,6 @@ public class DiagramValidator {
         return hasCycle(n.left, visited) || hasCycle(n.right, visited);
     }
 
-    // ---- BST ordering ------------------------------------------------
 
     /**
      * Returns true if the subtree rooted at n satisfies the BST property.
@@ -215,19 +205,12 @@ public class DiagramValidator {
         // no numeric label on this node — skip ordering check at this level
         return isBST(n.left, lo, hi) && isBST(n.right, lo, hi);
     }
-
-    // ---- red-black property checks -----------------------------------
-
     private static boolean hasColours(TreeNode n) {
         if (n == null) return false;
         if (n.color != null && !n.color.isEmpty()) return true;
         return hasColours(n.left) || hasColours(n.right);
     }
 
-    /**
-     * Checks the main red-black tree properties.
-     * Returns null if all hold, or a descriptive note if any are violated.
-     */
     private static String checkRedBlack(TreeNode root, String slideTitle) {
         boolean isIntermediate = isIntermediateSlide(slideTitle);
 
@@ -242,7 +225,6 @@ public class DiagramValidator {
                    "the rule that the root must always be black." + fix;
         }
 
-        // Property: no two consecutive red nodes (parent and child both red)
         if (hasDoubleRed(root)) {
             return "Red-black property check: this diagram contains a red node whose " +
                    "parent is also red (a double-red violation). This is an intermediate " +
@@ -251,7 +233,6 @@ public class DiagramValidator {
                    "full correction.";
         }
 
-        // Property: equal black-height on all root-to-null paths
         if (blackHeight(root) == -1) {
             return "Red-black property check: the number of black nodes on different " +
                    "root-to-leaf paths is not equal (black-height imbalance). " +
@@ -272,10 +253,6 @@ public class DiagramValidator {
         return hasDoubleRed(n.left) || hasDoubleRed(n.right);
     }
 
-    /**
-     * Returns the black-height of the subtree (number of black nodes on any
-     * path to a null leaf, where null counts as black), or -1 if paths differ.
-     */
     private static int blackHeight(TreeNode n) {
         if (n == null) return 0; // null sentinel counts as black, height 0
         int l = blackHeight(n.left);
@@ -284,8 +261,6 @@ public class DiagramValidator {
         boolean isBlack = "black".equals(n.color) || n.color == null || n.color.isEmpty();
         return l + (isBlack ? 1 : 0);
     }
-
-    // ---- B-tree checks -----------------------------------------------
 
     /**
      * Checks that every node's keys are sorted in ascending order and that
@@ -315,17 +290,13 @@ public class DiagramValidator {
         return k != null && k.trim().matches("-?\\d+");
     }
 
-    // ---- slide context -----------------------------------------------
-
     /**
      * Returns true if the slide title suggests it shows an operation in
      * progress (insertion, rotation, a case diagram) rather than a final state.
      */
     /**
-     * Returns true only when the slide title clearly indicates a binary SEARCH
-     * tree, AVL tree, splay tree or red-black tree. Heaps, leftist heaps,
-     * Huffman trees and disjoint sets should return false so that their
-     * non-BST numeric values are not rejected by the ordering check.
+     * Returns true only when the slide title clearly indicates a binary SEARCH  tree, AVL tree, splay tree or red-black tree. Heaps, leftist heaps,
+     * Huffman trees and disjoint sets should return false so that their non-BST numeric values are not rejected by the ordering check.
      */
     private static boolean isBSTContext(String title) {
         if (title == null || title.isEmpty()) return false;

@@ -56,9 +56,6 @@ public class GraphBuilder {
             GNode a = gnodes.get(nodeShapes.get(pair[0]).id); // up-end
             GNode b = gnodes.get(nodeShapes.get(pair[1]).id); // lo-end
 
-            // pair[0]=up-end, pair[1]=lo-end of the line bounding box.
-            // headArrow=true means arrowhead is at the lo-end → edge goes a→b.
-            // tailArrow=true means arrowhead is at the up-end → edge goes b→a.
             boolean directed = e.headArrow != e.tailArrow; // exactly one end has arrow
             if (directed) {
                 if (e.headArrow) {
@@ -77,7 +74,6 @@ public class GraphBuilder {
             ds.union(pair[0], pair[1]);
         }
 
-        // split into connected pieces (an isolated node is its own piece)
         Map<Integer, Graph> comps = new LinkedHashMap<>();
         for (int i = 0; i < nodeShapes.size(); i++)
             comps.computeIfAbsent(ds.find(i), k -> new Graph())
@@ -93,13 +89,8 @@ public class GraphBuilder {
         return graphs;
     }
 
-    // does the whole shape set look like a graph rather than a tree?
-    // a tree of k nodes has exactly k-1 edges and no node with two parents; if we see
-    // more connections than that (a cycle), it's a graph.
     public boolean looksLikeGraph(List<AvShape> shapes) {
-        // A tree with n nodes has n-1 edges. Red-black slides add ~n decorative stub
-        // lines below leaf nodes, so edge count can reach 2n-1 without being a graph.
-        // Only declare GRAPH when edges clearly exceed what any tree can produce.
+     
         List<Graph> gs = build(shapes);
         for (Graph g : gs) {
             if (g.nodes.size() >= 3 && g.edgeCount > g.nodes.size() * 2) return true;

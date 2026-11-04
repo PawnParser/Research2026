@@ -2,11 +2,6 @@ package avparser;
 
 import java.util.*;
 
-// Works out the shape of a normal binary tree from just the circles and the lines
-// between them - the slide never says "C is G's left child", so we infer it:
-//   - each line joins the two circles nearest its ends
-//   - circles joined by lines form one tree (separate clusters = separate trees)
-//   - the higher circle is the parent, left/right comes from the x positions
 public class TreeBuilder {
 
     public static class Diagram {
@@ -26,8 +21,6 @@ public class TreeBuilder {
         }
         if (nodes.isEmpty()) return Collections.emptyList();
 
-        // turn each line into a "these two nodes are connected" pair and union them,
-        // so each blob of connected nodes ends up as one tree
         List<int[]> connections = new ArrayList<>();
         DisjointSet ds = new DisjointSet(nodes.size());
         for (AvShape e : edges) {
@@ -48,8 +41,7 @@ public class TreeBuilder {
             if (d != null) diagrams.add(d);
         }
 
-        // hand them back in reading order: top to bottom, then left to right.
-        // trees whose roots sit at about the same height count as the same "row".
+
         double band = avgNodeHeight() * 3.0;
         diagrams.sort(Comparator
                 .comparingLong((Diagram d) -> Math.round(d.root.y / band))
@@ -64,9 +56,7 @@ public class TreeBuilder {
         return Math.max(sum / nodes.size(), 1);
     }
 
-    // which two nodes does this line join? a line shape only gives us a bounding box,
-    // so we rebuild its real end points from the box plus the flipH/flipV flags, then
-    // grab the nearest node to each end.
+
     private int[] matchEdge(AvShape e) {
         if (nodes.size() < 2) return null;
 
@@ -75,12 +65,7 @@ public class TreeBuilder {
         double upY = e.y, loY = e.y + e.h;
         if (e.flipV) { double t = upY; upY = loY; loY = t; double tx = upX; upX = loX; loX = tx; }
 
-        // if the nearest node is too far away, treat it as no match - this is what stops
-        // a line in one tree from grabbing a node in the tree next to it
-        // 2.8× is needed for the smallest circles (24px diameter) where diagonal
-        // edges land ~30px from node center. Stubs are still filtered because they
-        // only have one endpoint near a node. Cross-tree matching is safe because
-        // adjacent trees are always 100+ px apart.
+
         double threshold = nodeRadius() * 2.8;
 
         int up = nearestWithin(upX, upY, -1, threshold);
@@ -168,7 +153,6 @@ public class TreeBuilder {
         return false;
     }
 
-    // plain union-find, used to group connected nodes
     static class DisjointSet {
         int[] p;
         DisjointSet(int n) { p = new int[n]; for (int i = 0; i < n; i++) p[i] = i; }

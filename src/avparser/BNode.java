@@ -2,7 +2,7 @@ package avparser;
 
 import java.util.*;
 
-// A B-tree node: a row of keys and, below it, its child nodes in order.
+// b tree node: a row of keys and below it, its child nodes in order
 public class BNode {
     public List<String> keys = new ArrayList<>();
     public List<BNode> children = new ArrayList<>();
@@ -18,7 +18,7 @@ public class BNode {
         return n;
     }
 
-    //every key in this subtree - used to spot which key is new between two snapshots
+    //every key in subtree - used to spot which key is new between two snapshots
     public List<String> allKeys() {
         List<String> out = new ArrayList<>(keys);
         for (BNode c : children) out.addAll(c.allKeys());

@@ -2,16 +2,8 @@ package avparser;
 
 import java.util.*;
 
-// Writes the actual HTML page for a reconstructed tree - one self-contained file
-// with the styling, the ARIA live region and the key handling baked in. The layout
-// matches the BST_explorer page we already tested with NVDA. A static binary tree
-// only gets arrow-key navigation; a B-tree also gets Page Up/Down to step through
-// the insertions.
 public class HtmlGenerator {
 
-    // Generates a single HTML page for a sequence of diagrams that represent
-    // the same tree being rotated or recoloured step by step. Page Down/Page Up
-    // moves between steps; the tree navigator (arrow keys) works within each step.
     public String generateTreeSequence(String pageTitle,
                                        java.util.List<TreeBuilder.Diagram> steps,
                                        String context) {
@@ -171,11 +163,7 @@ public class HtmlGenerator {
         return sb.toString();
     }
 
-    // ---- treap informational page ----------------------------------------
-    // Treap nodes are stored as a single large text box in the PPTX, not as
-    // individual shapes. We cannot build an interactive tree from them. Instead
-    // we generate a readable page that explains the treap concept and shows the
-    // node values from the slide text.
+
     public String generateTreapInfo(String pageTitle, String nodeText, String slideContext) {
         String body =
             "<p>A <strong>treap</strong> (tree + heap) is a binary tree in which each node " +
